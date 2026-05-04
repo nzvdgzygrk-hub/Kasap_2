@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Fatih Kasap Bestellliste</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+body { font-family: Arial; padding: 20px; font-size: 18px; }
+input, button, select { font-size: 18px; padding: 10px; margin: 6px 0; width: 100%; box-sizing: border-box; }
+button { border: 1px solid #999; border-radius: 6px; background: #eee; }
+table { border-collapse: collapse; width: 100%; margin-top: 15px; font-size: 15px; }
+th, td { border: 1px solid #ccc; padding: 8px; }
+th { background: #eee; }
+.box { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 8px; }
+</style>
+</head>
+
+<body>
+
+<h1>Fatih Kasap Bestellliste</h1>
+
+<div class="box">
+  <h3>Excel-Dateiname</h3>
+  <input id="fileName" value="Fatih Kasap Bestellung">
+  <button onclick="exportExcel()">Excel herunterladen</button>
+</div>
+
+<div class="box">
+  <h3>Kunde hinzufügen</h3>
+  <input id="customerName" placeholder="Kundenname">
+  <input id="password" type="password" placeholder="Passwort">
+  <button onclick="addCustomer()">Kunde hinzufügen</button>
+  <button onclick="deleteCustomer()">Ausgewählten Kunden löschen</button>
+</div>
+
+<div class="box">
+  <h3>Kunde auswählen</h3>
+  <select id="customerSelect" onchange="selectCustomer()"></select>
+</div>
+
+<div class="box">
+  <h3>Artikel</h3>
+  <div id="items"></div>
+</div>
+
+<script>
+const PASSWORD = "Tavuk";
+
+const ARTICLES = [
+["Hähnchenbrust","Tavuk göğsü"],
+["Hähnchen-Innenfilet","Tavuk iç göğüs"],
+["Hähnchenschenkel (Keule)","Tavuk but"],
+["Hähnchen-Unterschenkel (Drumsticks)","Tavuk baget"],
+["Hähnchenoberkeule","Tavuk but üstü"],
+["Hähnchenflügel","Tavuk kanat"],
+["Ganzes Hähnchen","Bütün tavuk"],
+["Hähnchenhack","Tavuk kıyma"],
+["Hähnchenleber","Tavuk ciğer"],
+["Hähnchenherzen","Tavuk yürek"],
+
+["Putenbrust","Hindi göğüs"],
+["Putenschenkel","Hindi but"],
+["Putenhack","Hindi kıyma"],
+
+["Rinderhack (normal)","Dana kıyma (normal)"],
+["Rinderhack (fettreich)","Dana kıyma (yağlı)"],
+["Rindfleisch gewürfelt (Gulasch)","Dana kuşbaşı"],
+["Rindersteak","Dana biftek"],
+["Rinderschulter","Dana kol"],
+["Rinderkeule","Dana but"],
+["Rindernacken","Dana gerdan"],
+["Rinderbeinscheibe","Dana incik"],
+["Rind Suppenfleisch","Dana çorbalık et"],
+["Hackfleisch für Burger","Hamburgerlik kıyma"],
+
+["Lammhack","Kuzu kıyma"],
+["Lammkeule","Kuzu but"],
+["Lammschulter","Kuzu kol"],
+["Lammnacken","Kuzu gerdan"],
+["Lammkotelett","Kuzu pirzola"],
+["Lammfleisch gewürfelt","Kuzu kuşbaşı"],
+
+["Adana-Kebab-Fleisch (gewürzt)","Adana kebap harcı"],
+["Urfa-Kebab-Fleisch (mild)","Urfa kebap harcı"],
+["Köfte-Fleisch (gewürzt)","Köftelik kıyma"],
+["Tavuk Şiş (mariniert)","Tavuk şiş"],
+["Kuzu Şiş (mariniert)","Kuzu şiş"],
+["Dana Şiş (mariniert)","Dana şiş"],
+["Hähnchenflügel mariniert","Marine tavuk kanat"],
+
+["Dönerfleisch Rind (roh)","Dana dönerlik et"],
+["Dönerfleisch Hähnchen (roh)","Tavuk dönerlik et"],
+
+["Sucuk (Rindswurst)","Sucuk"],
+["Pastirma","Pastırma"],
+["Räucherwurst gemischt","Karışık füme sosis"],
+["Merguez (Rind/Lamm)","Merguez"],
+["Türkische Salami","Türk salam"],
+["Geflügelwurst","Tavuk sosis"],
+["Rinder-Hotdog-Wurst","Dana sosis"],
+
+["Rinderleber","Dana ciğer"],
+["Lammleber","Kuzu ciğer"],
+["Rinderherz","Dana yürek"],
+["Lammherz","Kuzu yürek"],
+["Rinderniere","Dana böbrek"],
+["Lammniere","Kuzu böbrek"],
+["Kutteln (geputzt)","İşkembe temiz"],
+["Kutteln (ungeputzt)","İşkembe çiğ"],
+["Lammhirn","Kuzu beyin"],
+["Rinderhirn","Dana beyin"],
+["Rinderzunge","Dana dil"],
+
+["Knochen gemischt (Suppe)","Çorbalık kemik"],
+["Markknochen","İlikli kemik"],
+["Lammkopf","Kuzu kelle"],
+["Kopffleisch Rind","Dana kelle eti"],
+["Lammfüße","Kuzu paça"],
+["Rinderfüße","İnek paça"],
+
+["Gemischtes Hack (Rind+Lamm)","Karışık kıyma"],
+["Fertige Köfte (roh)","Hazır köfte"],
+["Fleisch für Çiğköfte","Çiğköftelik et"],
+["Kokoreç (roh)","Çiğ kokoreç"],
+["Kokoreç (gewürzt, fertig)","Hazır kokoreç"]
+];
+
+let customers = [];
+let selected = -1;
+
+function checkPassword() {
+  const pw = document.getElementById("password").value;
+  if (pw !== PASSWORD) {
+    alert("Falsches Passwort");
+    return false;
+  }
+  return true;
+}
+
+function addCustomer() {
+  if (!checkPassword()) return;
+
+  const name = document.getElementById("customerName").value.trim();
+  if (!name) {
+    alert("Kundenname eingeben");
+    return;
+  }
+
+  customers.push({ name: name, orders: {} });
+  selected = customers.length - 1;
+
+  document.getElementById("customerName").value = "";
+  document.getElementById("password").value = "";
+
+  renderCustomers();
+  renderItems();
+}
+
+function deleteCustomer() {
+  if (!checkPassword()) return;
+
+  if (selected < 0) {
+    alert("Kein Kunde ausgewählt");
+    return;
+  }
+
+  if (!confirm("Kunden wirklich löschen?")) return;
+
+  customers.splice(selected, 1);
+  selected = customers.length ? 0 : -1;
+
+  document.getElementById("password").value = "";
+
+  renderCustomers();
+  renderItems();
+}
+
+function renderCustomers() {
+  const select = document.getElementById("customerSelect");
+  select.innerHTML = "";
+
+  if (customers.length === 0) {
+    select.innerHTML = "<option>Kein Kunde</option>";
+    return;
+  }
+
+  customers.forEach((customer, index) => {
+    const opt = document.createElement("option");
+    opt.value = index;
+    opt.textContent = customer.name;
+    if (index === selected) opt.selected = true;
+    select.appendChild(opt);
+  });
+}
+
+function selectCustomer() {
+  selected = Number(document.getElementById("customerSelect").value);
+  renderItems();
+}
+
+function renderItems() {
+  const div = document.getElementById("items");
+
+  if (selected < 0) {
+    div.innerHTML = "Bitte zuerst Kunde hinzufügen.";
+    return;
+  }
+
+  let html = "<table>";
+  html += "<tr><th>Deutsch</th><th>Türkisch</th><th>kg</th></tr>";
+
+  ARTICLES.forEach((article, index) => {
+    const value = customers[selected].orders[index] || "";
+
+    html += "<tr>";
+    html += "<td>" + article[0] + "</td>";
+    html += "<td>" + article[1] + "</td>";
+    html += "<td><input type='number' step='0.01' value='" + value + "' oninput='saveOrder(" + index + ", this.value)'></td>";
+    html += "</tr>";
+  });
+
+  html += "</table>";
+  div.innerHTML = html;
+}
+
+function saveOrder(index, value) {
+  if (selected < 0) return;
+
+  const num = parseFloat(value.replace(",", "."));
+
+  if (!value || isNaN(num) || num <= 0) {
+    delete customers[selected].orders[index];
+  } else {
+    customers[selected].orders[index] = num;
+  }
+}
+
+function cleanSheetName(name) {
+  return name.replace(/[\\/?*[\]:]/g, "").substring(0, 31) || "Kunde";
+}
+
+function cleanFileName(name) {
+  return name.replace(/[\\/:*?"<>|]/g, "") || "Bestellung";
+}
+
+function exportExcel() {
+  if (typeof XLSX === "undefined") {
+    alert("Excel-Bibliothek nicht geladen. Internet prüfen.");
+    return;
+  }
+
+  if (customers.length === 0) {
+    alert("Erst Kunde hinzufügen");
+    return;
+  }
+
+  const workbook = XLSX.utils.book_new();
+
+  customers.forEach((customer, cIndex) => {
+    const rows = [];
+
+    rows.push(["Kunde", customer.name]);
+    rows.push(["Datum", new Date().toLocaleDateString("de-DE")]);
+    rows.push([]);
+    rows.push(["Artikel Deutsch", "Artikel Türkisch", "kg"]);
+
+    let hasOrder = false;
+
+    ARTICLES.forEach((article, index) => {
+      const kg = customer.orders[index];
+
+      if (kg && kg > 0) {
+        rows.push([article[0], article[1], kg]);
+        hasOrder = true;
+      }
+    });
+
+    if (!hasOrder) {
+      rows.push(["Keine Bestellung", "", ""]);
+    }
+
+    const sheet = XLSX.utils.aoa_to_sheet(rows);
+    sheet["!cols"] = [
+      { wch: 35 },
+      { wch: 35 },
+      { wch: 10 }
+    ];
+
+    let sheetName = cleanSheetName(customer.name);
+    if (workbook.SheetNames.includes(sheetName)) {
+      sheetName = cleanSheetName(customer.name + " " + (cIndex + 1));
+    }
+
+    XLSX.utils.book_append_sheet(workbook, sheet, sheetName);
+  });
+
+  const fileName = cleanFileName(document.getElementById("fileName").value);
+  XLSX.writeFile(workbook, fileName + ".xlsx");
+}
+
+renderCustomers();
+renderItems();
+</script>
+
+</body>
+</html>
