@@ -17,10 +17,24 @@ function today(){return new Date().toLocaleDateString("de-DE")}
 function articleName(i){return ARTICLES[i][lang==="de"?0:1]}
 function articleClass(i){return ARTICLES[i]?.[2]||"other"}
 function currentOrders(c,filter=null){const rows=[];ARTICLES.forEach((a,i)=>{const o=orderAt(c.orders?.[i]);if(hasOrder(o)&&(!filter||articleClass(i)===filter))rows.push({i,name:articleName(i),de:a[0],tr:a[1],o})});return rows}
-function applyLanguage(){const x=t();document.documentElement.lang=lang;exportTitle.textContent=x.exportTitle;companyLabel.textContent=x.company;fileLabel.textContent=x.file;excelBtn.textContent=x.excel;pdfBtn.textContent=x.pdf;exportHint.textContent=x.exportHint;manageTitle.textContent=x.manage;customerName.placeholder=x.customerName;addBtn.textContent=x.add;deleteBtn.textContent=x.del;assignTitle.textContent=x.assign;assignHint.textContent=x.assignHint;selectTitle.textContent=x.select;itemsTitle.textContent=x.items;articleSearch.placeholder=x.search;deBtn.classList.toggle("active",lang==="de");trBtn.classList.toggle("active",lang==="tr");renderCustomers();renderAssignments();renderItems()}
+function applyLanguage(){const x=t();document.documentElement.lang=lang;exportTitle.textContent=x.exportTitle;companyLabel.textContent=x.company;fileLabel.textContent=x.file;excelBtn.textContent=x.excel;pdfBtn.textContent=x.pdf;exportHint.textContent=x.exportHint;manageTitle.textContent=x.manage;customerName.placeholder=x.customerName;addBtn.textContent=x.add;deleteBtn.textContent=x.del;resetOrdersBtn.textContent=lang==="de"?"Alle Bestellungen zurücksetzen":"Tüm siparişleri sıfırla";assignTitle.textContent=x.assign;assignHint.textContent=x.assignHint;selectTitle.textContent=x.select;itemsTitle.textContent=x.items;articleSearch.placeholder=x.search;deBtn.classList.toggle("active",lang==="de");trBtn.classList.toggle("active",lang==="tr");renderCustomers();renderAssignments();renderItems()}
 deBtn.onclick=()=>{lang="de";save();applyLanguage()};trBtn.onclick=()=>{lang="tr";save();applyLanguage()};companyName.value=company;fileName.value=baseFile;companyName.onchange=save;fileName.onchange=save;
 function addCustomer(){const name=customerName.value.trim();if(!name)return alert(t().enter);customers.push({name,orders:{},page:null});selected=customers.length-1;customerName.value="";save();renderCustomers();renderAssignments();renderItems()}
 function deleteCustomer(){if(!customers.length)return;if(!confirm(t().confirm))return;customers.splice(selected,1);selected=customers.length?Math.min(selected,customers.length-1):-1;save();renderCustomers();renderAssignments();renderItems()}
+function resetAllOrders(){
+ const entered=prompt(lang==="de"?"Passwort zum Zurücksetzen aller Bestellungen eingeben:":"Tüm siparişleri sıfırlamak için şifreyi girin:");
+ if(entered===null)return;
+ if(entered!=="enver")return alert(lang==="de"?"Falsches Passwort.":"Şifre yanlış.");
+ const ok=confirm(lang==="de"?"Wirklich ALLE Bestellungen aller Kunden auf 0 setzen? Kunden und Sayfa-Zuordnungen bleiben erhalten.":"Tüm müşterilerin TÜM siparişleri gerçekten sıfırlansın mı? Müşteriler ve Sayfa atamaları korunur.");
+ if(!ok)return;
+ customers.forEach(c=>{c.orders={}});
+ save();
+ renderCustomers();
+ renderAssignments();
+ renderItems();
+ exportStatus.className="status ok";
+ exportStatus.textContent=lang==="de"?"Alle Bestellungen wurden zurückgesetzt.":"Tüm siparişler sıfırlandı.";
+}
 function renderCustomers(){customerSelect.innerHTML="";if(!customers.length){customerSelect.innerHTML=`<option>${t().none}</option>`;return}customers.forEach((c,i)=>{const o=document.createElement("option");o.value=i;o.textContent=c.name+(c.page&&hasCustomerOrder(c)?` · Sayfa ${c.page}`:"");if(i===selected)o.selected=true;customerSelect.appendChild(o)})}
 function selectCustomer(){selected=Number(customerSelect.value);save();renderItems()}
 function renderAssignments(){const active=activeCustomers();if(!active.length){assignmentGrid.innerHTML=`<div class="empty-assign">${escapeHtml(t().noActiveOrders)}</div>`;assignmentStatus.className="status ok";assignmentStatus.textContent=t().noActiveOrders;return}let html='<div class="assign-list">';active.forEach(c=>{const i=customers.indexOf(c);html+=`<div class="assign-row"><div class="assign-customer">${escapeHtml(c.name)}</div><select class="assign-select" aria-label="${escapeHtml(c.name)} Sayfa" onchange="setPage(${i},Number(this.value))"><option value="">${lang==="de"?"Sayfa wählen":"Sayfa seç"}</option>`;for(let p=1;p<=10;p++)html+=`<option value="${p}" ${c.page===p?'selected':''}>Sayfa ${p}</option>`;html+='</select></div>'});assignmentGrid.innerHTML=html+'</div>';const missing=active.filter(c=>!c.page).length;assignmentStatus.className='status '+(missing?'warn':'ok');assignmentStatus.textContent=missing?`${missing} ${t().unassignedActive}`:t().assignedActive}
