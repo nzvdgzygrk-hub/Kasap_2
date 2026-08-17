@@ -46,11 +46,17 @@ function selectCustomer(){selected=Number(customerSelect.value);save();renderIte
 function renderAssignments(){
  const active=activeCustomers();
  if(!active.length){assignmentGrid.innerHTML=`<div class="empty-assign">${escapeHtml(t().noActiveOrders)}</div>`;assignmentStatus.className='status ok';assignmentStatus.textContent=t().noActiveOrders;return}
- let html='<table class="assign-table"><thead><tr><th>'+t().customer+'</th>';for(let p=1;p<=10;p++)html+=`<th>S${p}</th>`;html+='</tr></thead><tbody>';
- active.forEach(c=>{const i=customers.indexOf(c);html+=`<tr><td>${escapeHtml(c.name)}</td>`;for(let p=1;p<=10;p++)html+=`<td><input type="radio" name="page_${i}" aria-label="${escapeHtml(c.name)} Sayfa ${p}" ${c.page===p?'checked':''} onchange="setPage(${i},${p})"></td>`;html+='</tr>'});
- assignmentGrid.innerHTML=html+'</tbody></table>';const missing=active.filter(c=>!c.page).length;assignmentStatus.className='status '+(missing?'warn':'ok');assignmentStatus.textContent=missing?`${missing} ${t().unassignedActive}`:t().assignedActive;
+ let html='<div class="assign-list">';
+ active.forEach(c=>{
+   const i=customers.indexOf(c);
+   html+=`<div class="assign-row"><div class="assign-customer">${escapeHtml(c.name)}</div><select class="assign-select" aria-label="${escapeHtml(c.name)} Sayfa" onchange="setPage(${i},Number(this.value))"><option value="">${lang==='de'?'Sayfa wählen':'Sayfa seç'}</option>`;
+   for(let p=1;p<=10;p++)html+=`<option value="${p}" ${c.page===p?'selected':''}>Sayfa ${p}</option>`;
+   html+='</select></div>';
+ });
+ assignmentGrid.innerHTML=html+'</div>';
+ const missing=active.filter(c=>!c.page).length;assignmentStatus.className='status '+(missing?'warn':'ok');assignmentStatus.textContent=missing?`${missing} ${t().unassignedActive}`:t().assignedActive;
 }
-function setPage(i,p){customers[i].page=p;save();renderCustomers();renderAssignments()}
+function setPage(i,p){customers[i].page=(Number.isInteger(p)&&p>=1&&p<=10)?p:null;save();renderCustomers();renderAssignments()}
 
 function renderItems(){
  if(selected<0||!customers[selected]){items.textContent=t().first;return}const q=(articleSearch.value||"").trim().toLowerCase();let html=`<table class="items-table"><thead><tr><th class="item">${t().ware}</th><th class="num">kg</th><th class="num">${t().count}</th></tr></thead><tbody>`;let lastGroup="";
