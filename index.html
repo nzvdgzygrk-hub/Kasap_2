@@ -14,39 +14,26 @@
 <main>
 <h1 id="appTitle">Fatih Kasap Bestellliste</h1>
 <div id="subtitle" class="sub">Kasap_2 · Sayfa 1–10 · Tavuk Listesi · Tosun Listesi</div>
-
 <div class="box"><div class="row lang"><button id="deBtn" class="active">Deutsch</button><button id="trBtn">Türkçe</button></div></div>
-
 <div class="box">
 <h3 id="exportTitle">Export</h3>
 <div class="row"><div class="grow"><label id="companyLabel" for="companyName">Firma</label><input id="companyName" type="text" value="Omnia Meat GmbH"></div><div class="grow"><label id="fileLabel" for="fileName">Dateiname</label><input id="fileName" type="text" value="Fatih Kasap Bestellung"></div></div>
 <div class="toolbar" style="margin-top:10px"><button id="excelBtn" class="primary" onclick="exportExcel()">Excel exportieren</button><button id="pdfBtn" class="good" onclick="exportAllPDFs()">Einzel-PDFs exportieren</button></div>
 <div id="exportHint" class="hint"></div><div id="exportStatus" class="status"></div>
 </div>
-
 <div class="box">
 <h3 id="manageTitle">Kunden verwalten</h3>
-<div class="row"><div class="grow"><input id="customerName" type="text" placeholder="Kundenname"></div><div class="grow"><input id="password" type="password" placeholder="Passwort"></div></div>
+<input id="customerName" type="text" placeholder="Kundenname">
 <div class="row"><button id="addBtn" onclick="addCustomer()">Kunde hinzufügen</button><button id="deleteBtn" class="danger" onclick="deleteCustomer()">Ausgewählten Kunden löschen</button></div>
 </div>
-
 <details class="box assign-box" id="assignmentPanel">
 <summary id="assignTitle">Sayfa-Zuordnung</summary>
-<div class="assign-content">
-<div id="assignHint" class="hint"></div>
-<div class="tablewrap" style="margin-top:9px"><div id="assignmentGrid"></div></div>
-<div id="assignmentStatus" class="status"></div>
-</div>
+<div class="assign-content"><div id="assignHint" class="hint"></div><div class="tablewrap" style="margin-top:9px"><div id="assignmentGrid"></div></div><div id="assignmentStatus" class="status"></div></div>
 </details>
-
 <div class="box"><h3 id="selectTitle">Besteller auswählen</h3><select id="customerSelect" onchange="selectCustomer()"></select></div>
-
 <div class="box"><h3 id="itemsTitle">Artikel</h3><input id="articleSearch" class="search" type="text" placeholder="Artikel suchen…" oninput="renderItems()"><div class="tablewrap"><div id="items"></div></div></div>
 <div id="pdfStage"></div>
 </main>
-<script src="kasap2-data.js"></script>
-<script src="kasap2-core.js"></script>
-<script src="kasap2-excel.js"></script>
-<script src="kasap2-pdf.js"></script>
+<script src="kasap2-data.js"></script><script src="kasap2-core.js"></script><script src="kasap2-excel.js"></script><script src="kasap2-pdf.js"></script>
 </body>
 </html>
