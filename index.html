@@ -20,8 +20,8 @@
 <div class="box">
 <h3 id="exportTitle">Export</h3>
 <div class="row"><div class="grow"><label id="companyLabel" for="companyName">Firma</label><input id="companyName" type="text" value="Omnia Meat GmbH"></div><div class="grow"><label id="fileLabel" for="fileName">Dateiname</label><input id="fileName" type="text" value="Fatih Kasap Bestellung"></div></div>
-<div class="toolbar" style="margin-top:10px"><button id="excelBtn" class="primary" onclick="exportExcel()">Excel mit 12 Reitern exportieren</button><button id="pdfBtn" class="good" onclick="exportAllPDFs()">Alle 12 Reiter als einzelne PDFs</button></div>
-<div id="exportHint" class="hint">PDF-Export erstellt eine ZIP-Datei mit 12 einzelnen einseitigen PDFs.</div><div id="exportStatus" class="status"></div>
+<div class="toolbar" style="margin-top:10px"><button id="excelBtn" class="primary" onclick="exportExcel()">Excel exportieren</button><button id="pdfBtn" class="good" onclick="exportAllPDFs()">Einzel-PDFs exportieren</button></div>
+<div id="exportHint" class="hint"></div><div id="exportStatus" class="status"></div>
 </div>
 
 <div class="box">
@@ -30,7 +30,14 @@
 <div class="row"><button id="addBtn" onclick="addCustomer()">Kunde hinzufügen</button><button id="deleteBtn" class="danger" onclick="deleteCustomer()">Ausgewählten Kunden löschen</button></div>
 </div>
 
-<div class="box"><h3 id="assignTitle">Sayfa-Zuordnung</h3><div id="assignHint" class="hint">Jeder Besteller muss genau einer Sayfa 1–10 zugeordnet sein.</div><div class="tablewrap" style="margin-top:9px"><div id="assignmentGrid"></div></div><div id="assignmentStatus" class="status"></div></div>
+<details class="box assign-box" id="assignmentPanel">
+<summary id="assignTitle">Sayfa-Zuordnung</summary>
+<div class="assign-content">
+<div id="assignHint" class="hint"></div>
+<div class="tablewrap" style="margin-top:9px"><div id="assignmentGrid"></div></div>
+<div id="assignmentStatus" class="status"></div>
+</div>
+</details>
 
 <div class="box"><h3 id="selectTitle">Besteller auswählen</h3><select id="customerSelect" onchange="selectCustomer()"></select></div>
 
